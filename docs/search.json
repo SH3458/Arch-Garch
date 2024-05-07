@@ -1,0 +1,114 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Arch&Garch",
+    "section": "",
+    "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "index.html#what-does-heteroscedastic-mean",
+    "href": "index.html#what-does-heteroscedastic-mean",
+    "title": "ARCH & GARCH Models",
+    "section": "What does heteroscedastic mean?",
+    "text": "What does heteroscedastic mean?\n\nIt means that the standard deviations of a predicted variable are not constant over different values of an independent variable or over time.\nSo when the process is heteroscedastic (variance is not constant), it will follow heavy-tailed or outlier-prone probability distributions."
+  },
+  {
+    "objectID": "index.html#variance",
+    "href": "index.html#variance",
+    "title": "ARCH & GARCH Models",
+    "section": "Variance",
+    "text": "Variance\n\nEarly on econometrics was focused on modeling on the actual values.\nBut as the importance of volatility increased, the focus has been shifted to determining how it affects the actual values and the model.\nUnconditional variance = standard measure of the variance.\nConditional variance = Measure of uncertainty about a variable given a model and an information set."
+  },
+  {
+    "objectID": "index.html#factors-that-affects-variance",
+    "href": "index.html#factors-that-affects-variance",
+    "title": "ARCH & GARCH Models",
+    "section": "Factors that affects Variance",
+    "text": "Factors that affects Variance\n\nNon-trading period\nForecastable events - volatility is high during news announcements and other expected events or at certain times of day. (less volatile in the early afternoon)"
+  },
+  {
+    "objectID": "index.html#autoregressive-conditionally-heteroscedastic-model-arch",
+    "href": "index.html#autoregressive-conditionally-heteroscedastic-model-arch",
+    "title": "ARCH & GARCH Models",
+    "section": "Autoregressive Conditionally Heteroscedastic model (ARCH)",
+    "text": "Autoregressive Conditionally Heteroscedastic model (ARCH)\n\nConditionally Heteroscedastic series are non-stationary since the variance is not constant at time. There is volatilit present which affects the model.\nSo in order to incorporate this conditional heteroskedastic in our model, we can create an AR (autoregressive) model for the variance itself."
+  },
+  {
+    "objectID": "index.html#when-to-apply-arch",
+    "href": "index.html#when-to-apply-arch",
+    "title": "ARCH & GARCH Models",
+    "section": "When to apply ARCH?",
+    "text": "When to apply ARCH?\n\nResiduals of AR Model Resemble White Noise: If residuals from an AR model look like white noise but show autocorrelation in the ACF plot, consider applying ARCH to capture potential heteroskedasticity.\nConfirmation of Residuals’ Variance Structure: Squaring residuals and observing ACF can reveal autocorrelation, indicating time-varying variance suitable for ARCH modeling."
+  },
+  {
+    "objectID": "index.html#problems-in-arch-modeling",
+    "href": "index.html#problems-in-arch-modeling",
+    "title": "ARCH & GARCH Models",
+    "section": "Problems in ARCH modeling",
+    "text": "Problems in ARCH modeling\nIn most of the applications of the ARCH model a relatively long lag in the conditional variance is often called for, and this leads to the problem of negative variance and non-stationarity."
+  },
+  {
+    "objectID": "index.html#generalized-autoregressive-conditionally-heteroscedastic-model-garch",
+    "href": "index.html#generalized-autoregressive-conditionally-heteroscedastic-model-garch",
+    "title": "ARCH & GARCH Models",
+    "section": "Generalized Autoregressive Conditionally Heteroscedastic model (GARCH)",
+    "text": "Generalized Autoregressive Conditionally Heteroscedastic model (GARCH)\n\nIntroduced by Bolerslev in the 1986 .\nAim = More general structure in which the variance model looks more like an ARMA than an AR.\nAlso allows long memory and flexible lag structure."
+  },
+  {
+    "objectID": "index.html#testing-for-disturbances-between-arch",
+    "href": "index.html#testing-for-disturbances-between-arch",
+    "title": "ARCH & GARCH Models",
+    "section": "Testing for disturbances between ARCH",
+    "text": "Testing for disturbances between ARCH\n\nMethod 1: Examine the autocorrelation structure of residuals and squared residuals. In an ARCH process, residuals are uncorrelated, but squared residuals exhibit autocorrelation."
+  },
+  {
+    "objectID": "index.html#testing-for-disturbances-between-garch",
+    "href": "index.html#testing-for-disturbances-between-garch",
+    "title": "ARCH & GARCH Models",
+    "section": "Testing for disturbances between GARCH",
+    "text": "Testing for disturbances between GARCH\n\nMethod 1: Use the LM test for ARCH errors. If the null hypothesis is rejected, indicating the presence of long disturbances, a GARCH model might be more suitable.\nMethod 2: Apply a test based on the Lagrange Multiplier (LM) principle. The null hypothesis assumes ARCH(q) errors, while the alternative hypothesis suggests errors follow a GARCH(p, q) process."
+  },
+  {
+    "objectID": "index.html#data-preparation",
+    "href": "index.html#data-preparation",
+    "title": "ARCH & GARCH Models",
+    "section": "Data Preparation",
+    "text": "Data Preparation\n\n# Set API Key\nfredr_set_key(\"052142bc981666b4ebcb1c8df98d006b\")\n\n# Retrieve data\nAsset &lt;- fredr(series_id = \"TLAACBW027NBOG\")\n\n# Data Preparation\n# Check date format\nAsset$date &lt;- as.Date(Asset$date)\n\n# Check for missing values\nsum(is.na(Asset$value))\n\n[1] 0\n\n# Impute missing values\nAsset$value &lt;- na_interpolation(Asset$value)\n\n# Delete 2nd, 4th, and 5th columns\nAsset &lt;- Asset[, -c(2, 4, 5)]\n\n# Convert Asset to time series\nAsset_ts &lt;- ts(Asset$value, start = min(Asset$date), frequency = 52.18)"
+  },
+  {
+    "objectID": "index.html#visualization",
+    "href": "index.html#visualization",
+    "title": "ARCH & GARCH Models",
+    "section": "Visualization",
+    "text": "Visualization\n\nautoplot(Asset_ts, xlab = \"Date\", ylab = \"Value\")"
+  },
+  {
+    "objectID": "index.html#decomposition",
+    "href": "index.html#decomposition",
+    "title": "ARCH & GARCH Models",
+    "section": "Decomposition",
+    "text": "Decomposition\n\nAsset_decomp &lt;- stl(Asset_ts, s.window = \"periodic\")\n# Plotting decomposition\nautoplot(Asset_decomp)"
+  },
+  {
+    "objectID": "index.html#adf-test-for-stationarity",
+    "href": "index.html#adf-test-for-stationarity",
+    "title": "ARCH & GARCH Models",
+    "section": "ADF test for stationarity",
+    "text": "ADF test for stationarity\n\nadf.test(Asset$value)\n\n\n    Augmented Dickey-Fuller Test\n\ndata:  Asset$value\nDickey-Fuller = -0.14023, Lag order = 13, p-value = 0.99\nalternative hypothesis: stationary\n\n## Fitting the models\n\n# Fit ARCH model\narch_spec &lt;- ugarchspec(variance.model = list(model = \"sGARCH\", garchOrder = c(1, 0)), mean.model = list(armaOrder = c(0, 0)), distribution.model = \"std\")\narch_model &lt;- ugarchfit(spec = arch_spec, data = Asset_ts)\n# Fit GARCH model\ngarch_spec &lt;- ugarchspec(variance.model = list(model = \"sGARCH\", garchOrder = c(1, 1)), mean.model = list(armaOrder = c(0, 0)), distribution.model = \"std\")\ngarch_model &lt;- ugarchfit(spec = garch_spec, data = Asset_ts)"
+  },
+  {
+    "objectID": "index.html#forecasting-next-weeks-value",
+    "href": "index.html#forecasting-next-weeks-value",
+    "title": "ARCH & GARCH Models",
+    "section": "Forecasting next week’s value",
+    "text": "Forecasting next week’s value\n\n# Forecast next week's value for ARCH model\narch_forecast &lt;- ugarchforecast(arch_model, n.ahead = 1)\narch_next_week &lt;- arch_forecast@forecast$seriesFor[1]\n\n# Forecast next week's value for GARCH model\ngarch_forecast &lt;- ugarchforecast(garch_model, n.ahead = 1)\ngarch_next_week &lt;- garch_forecast@forecast$seriesFor[1]\n\n# Print the forecasted values\ncat(\"ARCH Model Forecast for Next Week:\", arch_next_week, \"\\n\")\n\nARCH Model Forecast for Next Week: 3285.602 \n\ncat(\"GARCH Model Forecast for Next Week:\", garch_next_week, \"\\n\")\n\nGARCH Model Forecast for Next Week: 3284.651"
+  }
+]
