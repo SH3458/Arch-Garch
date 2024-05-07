@@ -1,0 +1,200 @@
+---
+title: "ARCH & GARCH Models"
+author: "Shweta A M Hatote"
+format: revealjs
+editor: source
+toc: true
+toc-depth: 1
+slide-number: true
+smaller: false
+scrollable: true 
+execute:
+  echo: true
+editor_options: 
+  chunk_output_type: console
+---
+
+# Introduction
+
+# 
+
+-   In financial modeling and time series analysis, volatility plays a crucial role in understanding asset price movements.
+-   The ARCH and GARCH models designed to capture the dynamics of volatility in a time series dataset.
+-   If variance changes over time, the series is heteroscedastic.
+
+## What does heteroscedastic mean?
+
+-   It means that the standard deviations of a predicted variable are not constant over different values of an independent variable or over time.
+-   So when the process is heteroscedastic (variance is not constant), it will follow heavy-tailed or outlier-prone probability distributions.
+
+## Variance
+
+-   Early on econometrics was focused on modeling on the actual values.
+-   But as the importance of volatility increased, the focus has been shifted to determining how it affects the actual values and the model.
+-   Unconditional variance = standard measure of the variance.
+-   Conditional variance = Measure of uncertainty about a variable given a model and an information set.
+
+# 
+
+-   An increase in variance is serially correlated to a further increase in variance in initial situation.
+-   So we can say that a period of increased variance is conditional on the initial situation.
+-   This is where we can say the series is conditional heteroskedastic.
+
+## Factors that affects Variance
+
+-   Non-trading period
+-   Forecastable events - volatility is high during news announcements and other expected events or at certain times of day. (less volatile in the early afternoon)
+
+# Theory
+
+## Autoregressive Conditionally Heteroscedastic model (ARCH)
+
+-   Conditionally Heteroscedastic series are non-stationary since the variance is not constant at time. There is volatilit present which affects the model.
+-   So in order to incorporate this conditional heteroskedastic in our model, we can create an AR (autoregressive) model for the variance itself.
+
+# 
+
+-   Introduced by Rober F. Engle in the 1982.
+-   Aim = Model the conditional variance of a TS as a function of its own past values. ![](Screenshot 2024-05-02 075803.png)
+
+## When to apply ARCH?
+
+-   Residuals of AR Model Resemble White Noise: If residuals from an AR model look like white noise but show autocorrelation in the ACF plot, consider applying ARCH to capture potential heteroskedasticity.
+-   Confirmation of Residuals' Variance Structure: Squaring residuals and observing ACF can reveal autocorrelation, indicating time-varying variance suitable for ARCH modeling.
+
+# 
+
+-   Residuals Have Zero Mean: Ensure residuals have zero mean before applying ARCH, as it focuses on modeling conditional variance, assuming mean is accounted for.
+-   Absence of Trends or Seasonal Effects: Apply ARCH only to series without significant trends or seasonality; remove these effects using techniques like ARIMA before ARCH modeling if necessary.
+
+## Problems in ARCH modeling
+
+In most of the applications of the ARCH model a relatively long lag in the conditional variance is often called for, and this leads to the problem of negative variance and non-stationarity.
+
+## Generalized Autoregressive Conditionally Heteroscedastic model (GARCH)
+
+-   Introduced by Bolerslev in the 1986 .
+
+-   Aim = More general structure in which the variance model looks more like an ARMA than an AR.
+
+-   Also allows long memory and flexible lag structure.
+
+    ![](Screenshot 2024-05-02 075919.png)
+
+## Testing for disturbances between ARCH
+
+-   Method 1: Examine the autocorrelation structure of residuals and squared residuals. In an ARCH process, residuals are uncorrelated, but squared residuals exhibit autocorrelation.
+
+# 
+
+-   Method 2: Test based on the Lagrange Multiplier (LM) principle to assess whether the conditional error variance follows an ARCH process.
+
+1.  Null Hypothesis: Assumes no ARCH errors.
+2.  Alternative Hypothesis: Suggests the presence of ARCH(q) errors.
+3.  Procedure: -Conduct a regression of squared residuals on a constant and q lagged residuals. -Calculate the test statistic as nR\^2, where R\^2 is derived from the auxiliary regression.
+4.  Interpretation: Reject the null hypothesis if the test statistic exceeds the critical value from a chi-square distribution with q degrees of freedom. This test helps determine whether the squared residuals exhibit significant autocorrelation, indicating the presence of ARCH effects in the data.
+
+## Testing for disturbances between GARCH
+
+-   Method 1: Use the LM test for ARCH errors. If the null hypothesis is rejected, indicating the presence of long disturbances, a GARCH model might be more suitable.
+-   Method 2: Apply a test based on the Lagrange Multiplier (LM) principle. The null hypothesis assumes ARCH(q) errors, while the alternative hypothesis suggests errors follow a GARCH(p, q) process.
+
+# Applications
+
+-   Volatility forecasting: Predicting future volatility of asset returns.
+-   Risk management: Estimating Value at Risk (VaR) and Conditional Value at Risk (CVaR).
+-   Portfolio optimization: Incorporating volatility forecasts to optimize asset allocation.
+-   Option pricing: Improving the accuracy of option pricing models by better capturing volatility dynamics.
+
+# Demo
+
+```{r}
+suppressMessages({
+library(astsa)
+library(dplyr)
+library(forecast)
+library(fpp3)
+library(fredr)
+library(imputeTS)
+library(lubridate)
+library(rugarch)
+library(seasonal)
+library(tidyverse)
+library(tseries)
+library(tsbox)
+library(zoo)
+})
+```
+
+## Data Preparation
+
+```{r}
+# Set API Key
+fredr_set_key("052142bc981666b4ebcb1c8df98d006b")
+
+# Retrieve data
+Asset <- fredr(series_id = "TLAACBW027NBOG")
+
+# Data Preparation
+# Check date format
+Asset$date <- as.Date(Asset$date)
+
+# Check for missing values
+sum(is.na(Asset$value))
+
+# Impute missing values
+Asset$value <- na_interpolation(Asset$value)
+
+# Delete 2nd, 4th, and 5th columns
+Asset <- Asset[, -c(2, 4, 5)]
+
+# Convert Asset to time series
+Asset_ts <- ts(Asset$value, start = min(Asset$date), frequency = 52.18)
+```
+
+## Visualization
+
+```{r}
+autoplot(Asset_ts, xlab = "Date", ylab = "Value")
+```
+
+## Decomposition
+
+```{r}
+Asset_decomp <- stl(Asset_ts, s.window = "periodic")
+# Plotting decomposition
+autoplot(Asset_decomp)
+```
+
+## ADF test for stationarity
+
+```{r}
+adf.test(Asset$value)
+
+## Fitting the models
+
+# Fit ARCH model
+arch_spec <- ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(1, 0)), mean.model = list(armaOrder = c(0, 0)), distribution.model = "std")
+arch_model <- ugarchfit(spec = arch_spec, data = Asset_ts)
+# Fit GARCH model
+garch_spec <- ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(1, 1)), mean.model = list(armaOrder = c(0, 0)), distribution.model = "std")
+garch_model <- ugarchfit(spec = garch_spec, data = Asset_ts)
+```
+
+## Forecasting next week's value
+
+```{r}
+# Forecast next week's value for ARCH model
+arch_forecast <- ugarchforecast(arch_model, n.ahead = 1)
+arch_next_week <- arch_forecast@forecast$seriesFor[1]
+
+# Forecast next week's value for GARCH model
+garch_forecast <- ugarchforecast(garch_model, n.ahead = 1)
+garch_next_week <- garch_forecast@forecast$seriesFor[1]
+
+# Print the forecasted values
+cat("ARCH Model Forecast for Next Week:", arch_next_week, "\n")
+cat("GARCH Model Forecast for Next Week:", garch_next_week, "\n")
+```
+
+# Thank you!
